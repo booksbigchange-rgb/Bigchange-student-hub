@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Param,
-  Body,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AssignmentsService } from './assignments.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
@@ -26,75 +17,47 @@ export class AssignmentsController {
 
   @Post()
   @Roles('SUPER_ADMIN', 'ACADEMIC_COORDINATOR', 'CLASS_TEACHER', 'SUBJECT_TEACHER')
-  create(
-    @Body() dto: CreateAssignmentDto,
-    @CurrentUser('sub') userId: string,
-  ) {
-    return this.assignmentsService.create(dto, userId);
+  create(@Body() dto: CreateAssignmentDto, @CurrentUser('sub') userId: string, @CurrentUser('role') role: string, @CurrentUser('schoolId') schoolId: string) {
+    return this.assignmentsService.create(dto, userId, role, schoolId);
   }
 
   @Get()
-  findAll(
-    @Query('classId') classId?: string,
-    @Query('subjectId') subjectId?: string,
-    @Query('teacherId') teacherId?: string,
-    @Query('academicSessionId') academicSessionId?: string,
-    @Query('isPublished') isPublished?: string,
-  ) {
-    return this.assignmentsService.findAll({
-      classId,
-      subjectId,
-      teacherId,
-      academicSessionId,
-      isPublished,
-    });
+  findAll(@CurrentUser('schoolId') schoolId: string, @Query('classId') classId?: string, @Query('subjectId') subjectId?: string, @Query('teacherId') teacherId?: string, @Query('academicSessionId') academicSessionId?: string, @Query('isPublished') isPublished?: string) {
+    return this.assignmentsService.findAll({ classId, subjectId, teacherId, academicSessionId, isPublished }, schoolId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.assignmentsService.findById(id);
+  findOne(@Param('id') id: string, @CurrentUser('schoolId') schoolId: string) {
+    return this.assignmentsService.findById(id, schoolId);
   }
 
   @Patch(':id')
   @Roles('SUPER_ADMIN', 'ACADEMIC_COORDINATOR', 'CLASS_TEACHER', 'SUBJECT_TEACHER')
-  update(@Param('id') id: string, @Body() dto: Partial<CreateAssignmentDto>) {
-    return this.assignmentsService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: Partial<CreateAssignmentDto>, @CurrentUser('sub') userId: string, @CurrentUser('role') role: string, @CurrentUser('schoolId') schoolId: string) {
+    return this.assignmentsService.update(id, dto, userId, role, schoolId);
   }
 
   @Patch(':id/publish')
   @Roles('SUPER_ADMIN', 'ACADEMIC_COORDINATOR', 'CLASS_TEACHER', 'SUBJECT_TEACHER')
-  publish(@Param('id') id: string) {
-    return this.assignmentsService.publish(id);
+  publish(@Param('id') id: string, @CurrentUser('sub') userId: string, @CurrentUser('role') role: string, @CurrentUser('schoolId') schoolId: string) {
+    return this.assignmentsService.publish(id, userId, role, schoolId);
   }
 
   @Post(':id/submit')
   @Roles('STUDENT')
-  submit(
-    @Param('id') id: string,
-    @Body() dto: SubmitAssignmentDto,
-    @CurrentUser('sub') userId: string,
-  ) {
-    return this.assignmentsService.submit(id, dto, userId);
+  submit(@Param('id') id: string, @Body() dto: SubmitAssignmentDto, @CurrentUser('sub') userId: string, @CurrentUser('schoolId') schoolId: string) {
+    return this.assignmentsService.submit(id, dto, userId, schoolId);
   }
 
   @Get(':id/submissions')
   @Roles('SUPER_ADMIN', 'ACADEMIC_COORDINATOR', 'CLASS_TEACHER', 'SUBJECT_TEACHER')
-  getSubmissions(@Param('id') id: string) {
-    return this.assignmentsService.getSubmissions(id);
+  getSubmissions(@Param('id') id: string, @CurrentUser('sub') userId: string, @CurrentUser('role') role: string, @CurrentUser('schoolId') schoolId: string) {
+    return this.assignmentsService.getSubmissions(id, userId, role, schoolId);
   }
 
   @Patch('submissions/:id/grade')
   @Roles('SUPER_ADMIN', 'ACADEMIC_COORDINATOR', 'CLASS_TEACHER', 'SUBJECT_TEACHER')
-  gradeSubmission(
-    @Param('id') submissionId: string,
-    @Body() body: { marksAwarded: number; feedback: string },
-    @CurrentUser('sub') userId: string,
-  ) {
-    return this.assignmentsService.gradeSubmission(
-      submissionId,
-      body.marksAwarded,
-      body.feedback,
-      userId,
-    );
+  gradeSubmission(@Param('id') submissionId: string, @Body() body: { marksAwarded: number; feedback: string }, @CurrentUser('sub') userId: string, @CurrentUser('role') role: string, @CurrentUser('schoolId') schoolId: string) {
+    return this.assignmentsService.gradeSubmission(submissionId, body.marksAwarded, body.feedback, userId, role, schoolId);
   }
 }
