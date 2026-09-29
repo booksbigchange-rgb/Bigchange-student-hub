@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { SubmitAssignmentDto } from './dto/submit-assignment.dto';
@@ -95,20 +95,46 @@ export class AssignmentsService {
 
   async submit(assignmentId: string, dto: SubmitAssignmentDto, submittingUserId: string) {
     const assignment = await this.findById(assignmentId);
-    const isLate = new Date() > assignment.dueDate;
 
-    // Check if already submitted
+    // Never trust a studentId supplied by the client. Resolve the student record
+    // from the authenticated user so a student cannot submit as another student.
+    const student = await this.prisma.student.findUnique({
+      where: { userId: submittingUserId },
+      select: { id: true, classId: true, sectionId: true, academicSessionId: true },
+    });
+
+    if (!student) {
+      throw new ForbiddenException('Only a linked student account can submit assignments');
+    }
+
+    // The authenticated student must belong to the assignment's audience.
+    if (
+      student.classId !== assignment.classId ||
+      student.academicSessionId !== assignment.academicSessionId ||
+      (assignment.sectionId && student.sectionId !== assignment.sectionId)
+    ) {
+      throw new ForbiddenException('This assignment is not assigned to this student');
+    }
+
+    if (!assignment.isPublished) {
+      throw new ForbiddenException('This assignment is not available for submission');
+    }
+
+    const isLate = new Date() > assignment.dueDate;
+    if (isLate && !assignment.allowLate) {
+      throw new ForbiddenException('Late submissions are not allowed for this assignment');
+    }
+
     const existing = await this.prisma.assignmentSubmission.findUnique({
       where: {
         assignmentId_studentId: {
           assignmentId,
-          studentId: dto.studentId,
+          studentId: student.id,
         },
       },
     });
 
     if (existing) {
-      // Allow resubmission if status is RESUBMIT
       return this.prisma.assignmentSubmission.update({
         where: { id: existing.id },
         data: {
@@ -124,7 +150,7 @@ export class AssignmentsService {
     return this.prisma.assignmentSubmission.create({
       data: {
         assignmentId,
-        studentId: dto.studentId,
+        studentId: student.id,
         content: dto.content,
         fileUrl: dto.fileUrl,
         isLate,
