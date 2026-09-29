@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -7,7 +7,11 @@ import { CreateStudentDto } from './dto/create-student.dto';
 export class StudentsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateStudentDto) {
+  async create(dto: CreateStudentDto, schoolId: string) {
+    if (dto.schoolId !== schoolId) {
+      throw new ForbiddenException('Cannot create a student for another school');
+    }
+
     const passwordHash = await bcrypt.hash('student123', 10);
 
     return this.prisma.$transaction(async (tx) => {
@@ -18,7 +22,7 @@ export class StudentsService {
           firstName: dto.firstName,
           lastName: dto.lastName,
           role: 'STUDENT',
-          schoolId: dto.schoolId,
+          schoolId,
         },
       });
 
@@ -44,10 +48,14 @@ export class StudentsService {
     });
   }
 
-  async findAll(filters: { classId?: string; sectionId?: string; academicSessionId?: string }) {
+  async findAll(
+    filters: { classId?: string; sectionId?: string; academicSessionId?: string },
+    schoolId: string,
+  ) {
     return this.prisma.student.findMany({
       where: {
         isActive: true,
+        user: { schoolId },
         ...(filters.classId && { classId: filters.classId }),
         ...(filters.sectionId && { sectionId: filters.sectionId }),
         ...(filters.academicSessionId && { academicSessionId: filters.academicSessionId }),
@@ -61,9 +69,12 @@ export class StudentsService {
     });
   }
 
-  async findById(id: string) {
-    const student = await this.prisma.student.findUnique({
-      where: { id },
+  async findById(id: string, schoolId: string) {
+    const student = await this.prisma.student.findFirst({
+      where: {
+        id,
+        user: { schoolId },
+      },
       include: {
         user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true } },
         class: true,
