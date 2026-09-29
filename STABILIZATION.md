@@ -42,7 +42,8 @@ This branch exists to make the inherited School MIS safe enough for BigChange ev
 - Password reset now requires that verified reset token rather than accepting email+OTP again.
 - Password reset and password change revoke all refresh sessions.
 - New passwords require at least 10 characters and bcrypt cost 12.
-- Remaining: reset delivery provider, rate limiting/lockout, secure student onboarding/default-password removal.
+- Universal `student123` account password removed. Newly created student accounts receive an unreturned cryptographically random bootstrap secret, so they cannot log in until the verified onboarding/reset delivery flow sets their password.
+- Remaining: reset/onboarding delivery provider and rate limiting/lockout.
 
 ## P0 — Authorization and privacy
 - [ ] Finish `schoolId`/tenant scope audit on every sensitive query/dashboard count.
@@ -65,11 +66,12 @@ This branch exists to make the inherited School MIS safe enough for BigChange ev
 - [x] Generate safe server-side object names and prevent path/key abuse.
 
 ## P0 — Authentication
-- [ ] Replace predictable/universal student default passwords with secure onboarding.
+- [x] Remove predictable/universal student default passwords; accounts remain inaccessible until secure onboarding/reset is completed.
 - [x] Replace `Math.random()` OTP generation with cryptographically secure randomness.
 - [x] Do not log password-reset secrets/OTPs.
 - [x] Require verified, short-lived reset token for password reset.
 - [x] Shorten access-token lifetime and add refresh-token rotation/hashing/revocation controls.
+- [ ] Implement reset/onboarding delivery provider.
 - [ ] Add authentication/reset rate limiting and brute-force protection.
 
 ## P0 — Deployment and secrets
