@@ -68,6 +68,7 @@ export class AssignmentsController {
   }
 
   @Post(':id/submit')
+  @Roles('STUDENT')
   submit(
     @Param('id') id: string,
     @Body() dto: SubmitAssignmentDto,
