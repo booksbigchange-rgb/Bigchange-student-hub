@@ -11,50 +11,31 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
-  }
+  login(@Body() dto: LoginDto) { return this.authService.login(dto); }
 
   @Post('refresh')
-  refresh(@Body() dto: RefreshTokenDto) {
-    return this.authService.refreshTokens(dto.refreshToken);
-  }
+  refresh(@Body() dto: RefreshTokenDto) { return this.authService.refreshTokens(dto.refreshToken); }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  logout(@Req() req: any) {
-    return this.authService.logout(req.user.sub);
-  }
+  logout(@Req() req: any) { return this.authService.logout(req.user.sub); }
 
   @Post('forgot-password')
-  forgotPassword(@Body() body: { email: string }) {
-    return this.authService.requestPasswordReset(body.email);
-  }
+  forgotPassword(@Body() body: { email: string }) { return this.authService.requestPasswordReset(body.email); }
 
   @Post('verify-otp')
-  verifyOtp(@Body() body: { email: string; otp: string }) {
-    return this.authService.verifyResetOtp(body.email, body.otp);
-  }
+  verifyOtp(@Body() body: { email: string; otp: string }) { return this.authService.verifyResetOtp(body.email, body.otp); }
 
   @Post('reset-password')
-  resetPassword(
-    @Body() body: { email: string; otp: string; newPassword: string },
-  ) {
-    return this.authService.resetPassword(body.email, body.otp, body.newPassword);
+  resetPassword(@Body() body: { resetToken: string; newPassword: string }) {
+    return this.authService.resetPassword(body.resetToken, body.newPassword);
   }
 
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  changePassword(
-    @Req() req: any,
-    @Body() body: { currentPassword: string; newPassword: string },
-  ) {
-    return this.authService.changePassword(
-      req.user.sub,
-      body.currentPassword,
-      body.newPassword,
-    );
+  changePassword(@Req() req: any, @Body() body: { currentPassword: string; newPassword: string }) {
+    return this.authService.changePassword(req.user.sub, body.currentPassword, body.newPassword);
   }
 }
