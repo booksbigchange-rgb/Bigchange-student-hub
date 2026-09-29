@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -12,7 +13,11 @@ export class StudentsService {
       throw new ForbiddenException('Cannot create a student for another school');
     }
 
-    const passwordHash = await bcrypt.hash('student123', 10);
+    // Never assign a shared/predictable student password. This random bootstrap
+    // credential is intentionally not returned or logged. Account activation/reset
+    // must happen through the verified onboarding/password-reset delivery flow.
+    const bootstrapSecret = randomBytes(48).toString('base64url');
+    const passwordHash = await bcrypt.hash(bootstrapSecret, 12);
 
     return this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
@@ -48,10 +53,7 @@ export class StudentsService {
     });
   }
 
-  async findAll(
-    filters: { classId?: string; sectionId?: string; academicSessionId?: string },
-    schoolId: string,
-  ) {
+  async findAll(filters: { classId?: string; sectionId?: string; academicSessionId?: string }, schoolId: string) {
     return this.prisma.student.findMany({
       where: {
         isActive: true,
@@ -71,10 +73,7 @@ export class StudentsService {
 
   async findById(id: string, schoolId: string) {
     const student = await this.prisma.student.findFirst({
-      where: {
-        id,
-        user: { schoolId },
-      },
+      where: { id, user: { schoolId } },
       include: {
         user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true } },
         class: true,
