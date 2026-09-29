@@ -3,53 +3,82 @@
 This branch exists to make the inherited School MIS safe enough for BigChange evaluation before any rebranding or real student data is introduced.
 
 ## Rules
-
 - Do not rebrand on this branch.
 - Do not load real student, parent, grade, attendance, or homework data yet.
 - Preserve working features unless a security fix requires a behavior change.
 - Make small, reviewable commits and test each security boundary.
-- Authorization must be derived from the authenticated identity and database relationships; never trust client-supplied IDs as proof of permission.
+- Authorization must come from authenticated identity/database relationships, never client-supplied IDs.
+
+## Change log
+
+### Authorization / tenant isolation
+- Hardened sensitive student/parent access and school scoping.
+- Restricted global/search-style access by authenticated role and school where patched.
+
+### Homework / grading
+- Student submission identity is derived from authentication rather than trusted request identity.
+- Assignment eligibility and teacher ownership/subject authorization checks added.
+- Submission review/grading inherits assignment authorization.
+- Marks cannot exceed assignment total marks.
+
+### File storage
+- Objects are scoped under `schools/{schoolId}/`.
+- Bucket browsing/listing/statistics/delete endpoints restricted to appropriate staff roles.
+- Upload names are server-generated and folder/key traversal is rejected.
+- Upload cap reduced from 2 GB to 50 MB during stabilization.
+- Extension and declared MIME allowlists enforced; GIF removed from accepted uploads.
+- Signed download links shortened to 5 minutes.
+- Direct storage URL is no longer returned after upload.
+- Default `minioadmin` credentials removed; explicit S3 credentials required.
+- Remaining: object-level ownership/relationship authorization and content-signature inspection.
+
+### Authentication
+- Access token lifetime reduced from 7 days to 15 minutes.
+- JWT secret is now required and must be at least 32 characters.
+- Refresh tokens use 48 cryptographically random bytes and are stored only as SHA-256 hashes.
+- Refresh token rotation retained; inactive users cannot refresh sessions.
+- Password reset OTP uses cryptographic randomness, is stored hashed, expires after 10 minutes, and is never logged.
+- OTP verification consumes the OTP and returns a 10-minute purpose-bound reset JWT.
+- Password reset now requires that verified reset token rather than accepting email+OTP again.
+- Password reset and password change revoke all refresh sessions.
+- New passwords require at least 10 characters and bcrypt cost 12.
+- Remaining: reset delivery provider, rate limiting/lockout, secure student onboarding/default-password removal.
 
 ## P0 — Authorization and privacy
-
-- [ ] Enforce `schoolId`/tenant scope on sensitive queries and dashboard counts.
-- [ ] Restrict student list/detail endpoints by role and relationship.
-- [ ] Restrict parent access to linked children only.
-- [ ] Restrict global search by school and role; prevent student access to staff/admission/private records.
+- [ ] Finish `schoolId`/tenant scope audit on every sensitive query/dashboard count.
+- [x] Restrict student list/detail endpoints by role and relationship where identified.
+- [x] Restrict parent access to linked children where identified.
+- [x] Restrict global search by school and role where identified.
 - [ ] Add negative authorization tests: cross-student, cross-parent, cross-school and unauthorized-role access must fail.
 
 ## P0 — Homework and grading
-
-- [ ] Derive the submitting student from the authenticated user instead of trusting `studentId` from the request body.
-- [ ] Verify the student is eligible for the assignment/class.
-- [ ] Restrict teacher assignment updates, publishing, submission review and grading to permitted classes/subjects/assignments.
+- [x] Derive submitting student from authenticated user.
+- [x] Verify student eligibility for assignment/class.
+- [x] Restrict teacher assignment management/review/grading to permitted ownership/subjects.
 - [ ] Add regression tests for impersonation and unauthorized grading.
 
 ## P0 — File storage
-
-- [ ] Remove unrestricted bucket/file listing from ordinary authenticated users.
-- [ ] Require role/ownership checks for upload, download URL generation and deletion.
-- [ ] Reduce the inherited 2 GB upload limit to feature-appropriate limits.
-- [ ] Validate actual content/MIME type in addition to filename extension.
-- [ ] Generate safe server-side object names and prevent path/key abuse.
+- [x] Remove unrestricted bucket/file listing from ordinary authenticated users.
+- [ ] Require object-level role/ownership/relationship checks for every upload/download/delete context.
+- [x] Reduce inherited 2 GB upload limit.
+- [ ] Validate actual file content/signature in addition to extension and declared MIME type.
+- [x] Generate safe server-side object names and prevent path/key abuse.
 
 ## P0 — Authentication
-
-- [ ] Replace predictable/universal student default passwords with a secure onboarding flow.
-- [ ] Replace `Math.random()` OTP generation with a cryptographically secure mechanism.
-- [ ] Do not log password-reset secrets/OTPs in production.
-- [ ] Require a verified, short-lived reset token for password reset.
-- [ ] Shorten access-token lifetime and review refresh-token rotation/revocation.
+- [ ] Replace predictable/universal student default passwords with secure onboarding.
+- [x] Replace `Math.random()` OTP generation with cryptographically secure randomness.
+- [x] Do not log password-reset secrets/OTPs.
+- [x] Require verified, short-lived reset token for password reset.
+- [x] Shorten access-token lifetime and add refresh-token rotation/hashing/revocation controls.
+- [ ] Add authentication/reset rate limiting and brute-force protection.
 
 ## P0 — Deployment and secrets
-
-- [ ] Remove predictable production credentials from examples/defaults.
+- [ ] Remove predictable production credentials from all examples/defaults.
 - [ ] Do not expose MySQL, Redis, MinIO admin/API ports publicly in production.
 - [ ] Verify production CORS, proxy, cookie/token and TLS assumptions.
 - [ ] Add dependency and secret scanning to CI.
 
 ## P1 — Test quality and release gate
-
 - [ ] Tighten E2E assertions: unexpected HTTP 500 responses must fail tests.
 - [ ] Add object-level authorization and tenant-isolation tests.
 - [ ] Run clean install, lint, typecheck, build, unit/integration/E2E tests.
@@ -57,5 +86,4 @@ This branch exists to make the inherited School MIS safe enough for BigChange ev
 - [ ] Verify backup/restore procedure before real data is allowed.
 
 ## Exit criteria
-
-Phase 0 is complete only when the critical authorization, homework identity, teacher ownership, file-access, authentication and deployment issues above are fixed and covered by meaningful tests. Only then create `bigchange-rebrand` and begin the BigChange visual/UI work.
+Phase 0 is complete only when the critical authorization, homework identity, teacher ownership, file-access, authentication and deployment issues above are fixed and covered by meaningful tests. Only then create `bigchange-rebrand` and begin BigChange visual/UI work.
