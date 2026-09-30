@@ -1,4 +1,4 @@
-# Deployment security � Phase 0
+# Deployment security  -  Phase 0
 
 This branch is not approved for production or real student data.
 
@@ -50,3 +50,8 @@ MinIO signed downloads currently use S3_ENDPOINT directly: a remote browser
 cannot reach localhost/private storage. A reviewed HTTPS storage gateway and
 private bucket policies must be designed and tested before remote rollout.
 Never publish the MinIO console to solve download reachability.
+
+The API defaults to API_HOST=127.0.0.1. Containers may explicitly use 0.0.0.0
+only behind the private network described above. NODE_ENV=production disables
+Swagger and requires a nonempty list of exact HTTPS CORS origins (no paths,
+trailing slashes, wildcards or credentials). Separate entries with commas.

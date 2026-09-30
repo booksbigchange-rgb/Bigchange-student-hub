@@ -1,0 +1,6 @@
+{
+  "rootDir": "..",
+  "testEnvironment": "node",
+  "testMatch": ["<rootDir>/test/http-security.spec.ts"],
+  "transform": {"^.+\\.ts$": "ts-jest"}
+}
