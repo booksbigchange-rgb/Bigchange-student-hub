@@ -109,3 +109,16 @@ Phase 0 is complete only when the critical authorization, homework identity, tea
 - Weekly schedule runs only after the workflow reaches the default branch; main is preserved in this pass. Remote execution and branch-protection enforcement are not yet verified.
 - Local `npm audit --json`: 48 findings (6 low, 21 moderate, 18 high, 3 critical). Critical packages: handlebars, next, tar. Dependency upgrades require a separate compatibility/test pass; no audit suppressions or force upgrades applied.
 - Gitleaks execution is pending CI; no clean secret-scan claim. Existing leaked credentials would require rotation even if later removed from files.
+
+## 2026-09-30 - Verification and remaining blockers
+- `README.md`: remove demo-seeding commands and advertised passwords, remove the unsupported production-ready claim, link deployment guidance and correct Redis port. Inherited seed/test fixtures still contain demo passwords and must not be used for provisioning.
+- Clean `npm ci`: passed after moving TEMP/TMP into the workspace. No dependencies or lockfile versions changed.
+- `npm test`: passed, 14 HTTP policy tests; shared package build also passed. This is not the database E2E suite.
+- YAML syntax parsing: Compose and security workflow passed with js-yaml. `git diff --check` passed. Docker is absent, so Compose semantic/runtime and port-isolation checks remain blocked.
+- `npm run lint`: failed because ESLint is not installed/configured in the inherited repository.
+- Web typecheck: failed with 14 errors in untouched fees, LMS, promotions and users pages. Existing Next configuration skips type/lint errors during builds, so build success would not clear this gate.
+- API typecheck and root build: failed with errors across untouched modules, including unavailable generated Prisma types. Prisma generation failed downloading the Windows engine from binaries.prisma.sh; these failures cannot yet be classified entirely as code defects versus missing generated types.
+- Standalone web build also encountered a blocked Google Fonts download; see saved verification logs for final compiler output.
+- Database E2E tests not run: no isolated MySQL/MinIO runtime, no test environment credentials, and inherited tests require demo accounts/data. No seeds, migrations or real-data operations performed.
+- Production TLS, proxy topology, remote storage URLs, bucket policy, secret rotation and branch protection need deployment-side verification. Authentication throttling, onboarding delivery, tenant/object authorization and dependency upgrades remain open.
+- Local Git push failed connecting to github.com:443. Commits remain local on bigchange-stabilization; no remote branch or main updates were made. A Git bundle and verification report preserve the changes for transfer.

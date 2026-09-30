@@ -2,7 +2,7 @@
 
 **Open-source School Management & Learning Management System**
 
-A comprehensive, production-ready platform for managing academics, admissions, fees, attendance, assessments, LMS, staff, transport, hostel, and parent communication — built for schools of all sizes.
+A comprehensive platform under security stabilization for managing academics, admissions, fees, attendance, assessments, LMS, staff, transport, hostel, and parent communication — built for schools of all sizes.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
@@ -56,24 +56,20 @@ cp .env.example .env
 npm install
 ```
 
+> Phase 0: follow [DEPLOYMENT.md](DEPLOYMENT.md) to configure unique secrets first.
+> Do not use real student data or run demo seeds. See [STABILIZATION.md](STABILIZATION.md) for release blockers.
+
 ### 2. Start Infrastructure
 
 ```bash
 npm run docker:up    # Starts MySQL 8, Redis 7, MinIO
 ```
 
-### 3. Set Up Database
+### 3. Database preparation (blocked for production)
 
-```bash
-cd packages/api
-npx prisma db push
-npx ts-node prisma/seed.ts
-npx ts-node prisma/seed-data.ts
-npx ts-node prisma/seed-comprehensive.ts
-npx ts-node prisma/seed-new-modules.ts
-npx ts-node prisma/seed-more.ts
-npx ts-node prisma/seed-final.ts
-```
+Review the schema and migration history before provisioning an empty evaluation
+database. The inherited seed scripts create demo accounts with predictable
+passwords. Do not run them during stabilization or against production.
 
 ### 4. Run the Application
 
@@ -109,16 +105,10 @@ The application is deployed and available for testing:
 | **Login** | https://globuslms.globusdemos.com/login |
 | **API Docs (Swagger)** | https://globuslms.globusdemos.com/api/docs |
 
-### Demo Credentials
+### Demo accounts
 
-| Role | Email | Password | Access |
-|---|---|---|---|
-| **Admin/Principal** | `admin@medicaps.edu.in` | `admin123` | Full access — 82 menu items |
-| **Teacher** | `teacher@medicaps.edu.in` | `teacher123` | 27 menu items — attendance, grading, teaching tracker |
-| **Student** | `aarav.singh.10a@student.medicaps.edu.in` | `student123` | 15 menu items — timetable, assignments, gamification |
-| **Parent** | `parent.mis10a007@school.edu` | `parent123` | 9 menu items — ward overview, communication |
-
-Additional teacher accounts: `arun.patel@medicaps.edu.in`, `kavita.dubey@medicaps.edu.in`, `sanjay.mishra@medicaps.edu.in` (all use password `teacher123`)
+Inherited demo credentials are not deployment credentials. If demo seeds were
+previously used, disable or securely reprovision those accounts before rollout.
 
 ---
 
@@ -290,15 +280,15 @@ Copy `.env.example` to `.env` and configure:
 
 | Variable | Description | Default |
 |---|---|---|
-| `DATABASE_URL` | MySQL connection string | `mysql://mis_user:mis_password@localhost:3308/mis_ilsms` |
+| `DATABASE_URL` | MySQL connection string | None - configure a unique password |
 | `JWT_SECRET` | JWT signing secret | — (change this) |
 | `JWT_REFRESH_SECRET` | Refresh token secret | — (change this) |
 | `PORT` | API server port | `4000` |
 | `CORS_ORIGIN` | Allowed CORS origin | `http://localhost:3000` |
-| `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
+| `REDIS_URL` | Redis connection string | `redis://localhost:6381` |
 | `S3_ENDPOINT` | MinIO/S3 endpoint | `http://localhost:9000` |
-| `S3_ACCESS_KEY` | MinIO access key | `minioadmin` |
-| `S3_SECRET_KEY` | MinIO secret key | `minioadmin` |
+| `S3_ACCESS_KEY` | MinIO access key | None - explicitly configure |
+| `S3_SECRET_KEY` | MinIO secret key | None - explicitly configure |
 | `S3_BUCKET` | Upload bucket name | `mis-uploads` |
 
 ---
