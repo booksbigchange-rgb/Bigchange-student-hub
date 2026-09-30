@@ -89,3 +89,10 @@ This branch exists to make the inherited School MIS safe enough for BigChange ev
 
 ## Exit criteria
 Phase 0 is complete only when the critical authorization, homework identity, teacher ownership, file-access, authentication and deployment issues above are fixed and covered by meaningful tests. Only then create `bigchange-rebrand` and begin BigChange visual/UI work.
+
+## 2026-09-29 � Infrastructure configuration
+- `docker-compose.yml`: bind all four infrastructure ports to 127.0.0.1; require explicit database and MinIO secrets instead of predictable fallbacks.
+- `.env.example`: leave secrets blank, fix Redis host port to 6381.
+- `DEPLOYMENT.md`: document setup, existing-volume credential rotation, environment loading, host-local limitations, production TLS/proxy/storage/token blockers.
+- Inspection: no application Dockerfiles, proxy/TLS configs or CI workflows found. README and demo seeds still contain inherited demo credentials; these are not production provisioning and must not be run.
+- Validation: reviewed config diff; Docker is not installed here, so Compose parsing/runtime and external port checks are blocked. Production checklist remains open.
