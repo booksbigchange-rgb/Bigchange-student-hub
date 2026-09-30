@@ -103,3 +103,9 @@ Phase 0 is complete only when the critical authorization, homework identity, tea
 - `.env.example`, `DEPLOYMENT.md`: document NODE_ENV/API_HOST and private-network overrides. Live TLS/proxy, remote signed downloads and token storage remain unverified release blockers.
 - `packages/api/test/http-security.spec.ts`, `test/jest-security.json`: 14 focused policy tests; all passed locally. API test script now explicitly loads the TypeScript test config (default Jest could not parse the new test).
 - Full application checks are recorded separately below; policy tests do not establish end-to-end authorization or TLS correctness.
+
+## 2026-09-30 - CI security gates
+- `.github/workflows/security.yml`: dependency audit (high/critical fail), full-history Gitleaks scan and isolated HTTP policy tests on pushes/PRs; actions pinned to verified commit SHAs with read-only repository permissions and no persisted checkout credentials.
+- Weekly schedule runs only after the workflow reaches the default branch; main is preserved in this pass. Remote execution and branch-protection enforcement are not yet verified.
+- Local `npm audit --json`: 48 findings (6 low, 21 moderate, 18 high, 3 critical). Critical packages: handlebars, next, tar. Dependency upgrades require a separate compatibility/test pass; no audit suppressions or force upgrades applied.
+- Gitleaks execution is pending CI; no clean secret-scan claim. Existing leaked credentials would require rotation even if later removed from files.
