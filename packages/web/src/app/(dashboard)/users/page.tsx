@@ -139,7 +139,7 @@ export default function UsersPage() {
               </thead>
               <tbody>
                 {filtered.map(user => {
-                  const name = user.name ?? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || '--';
+                  const name = user.name ?? (`${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || '--');
                   const isActive = user.isActive !== false && user.status !== 'INACTIVE';
                   return (
                     <tr key={user.id} className="border-b last:border-0 hover:bg-muted/30">

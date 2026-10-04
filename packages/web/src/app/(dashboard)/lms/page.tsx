@@ -96,7 +96,10 @@ export default function LmsPage() {
 
   useEffect(() => {
     loadContent();
-    fetch('/api/v1/dashboard/stats', { headers: h() }).then(r => r.ok ? r.json() : {}).then(d => {
+    fetch('/api/v1/dashboard/stats', { headers: h() }).then(async r => {
+      if (!r.ok) throw new Error('Unable to load dashboard stats');
+      return await r.json() as Record<string, number>;
+    }).then(d => {
       setStats({
         content: d.totalLmsContent || 0, modules: d.totalCourseModules || 0,
         assignments: d.totalAssignments || 0, discussions: d.totalDiscussionForums || 0,

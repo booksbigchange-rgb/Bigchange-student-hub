@@ -14,9 +14,9 @@ interface FeeHead {
 interface Payment {
   id: string;
   studentName: string;
-  class: string;
+  class: string | { name: string } | null;
   amount: number;
-  feeHead: string;
+  feeHead: string | { name: string } | null;
   paidAt: string;
   mode: string;
 }
@@ -24,7 +24,7 @@ interface Payment {
 interface Defaulter {
   id: string;
   studentName: string;
-  class: string;
+  class: string | { name: string } | null;
   outstanding: number;
   months: number;
   callStatus: string;

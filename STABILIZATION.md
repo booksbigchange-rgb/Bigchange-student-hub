@@ -130,3 +130,10 @@ Phase 0 is complete only when the critical authorization, homework identity, tea
 - Fresh audit: 44 findings (6 low, 21 moderate, 16 high, 1 critical), down from 48/3 critical. Remaining critical package: Next. A supported-major Next migration with UI/runtime regression checks is still required.
 - Prisma client generation now succeeds with network access; API typecheck and API build pass. The earlier missing-client errors are resolved.
 - Policy tests: 14/14 passed after dependency updates. Full web build is recorded in the follow-up verification entry.
+
+## 2026-09-30 - Web typecheck repairs
+- `packages/web/src/app/(dashboard)/users/page.tsx`: parenthesize the mixed nullish/OR fallback that prevented compilation.
+- `fees/page.tsx`: align payment/defaulter labels with the string-or-object rendering already present.
+- `promotions/page.tsx`: declare the existing studentId/fromClassId response fields used by fallback labels.
+- `lms/page.tsx`: type the dashboard stats response and handle HTTP failure through the existing catch path.
+- Web `tsc --noEmit --incremental false`: passed after dependency installation completed. No redesign, mock data or unrelated features introduced.

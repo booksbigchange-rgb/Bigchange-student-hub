@@ -5,6 +5,8 @@ import { ArrowUpCircle, RefreshCw, ChevronDown } from 'lucide-react';
 
 interface PromotionRecord {
   id: string;
+  studentId: string;
+  fromClassId: string;
   status: string;
   overallPercentage: number | null;
   remarks: string | null;
