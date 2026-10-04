@@ -122,3 +122,11 @@ Phase 0 is complete only when the critical authorization, homework identity, tea
 - Database E2E tests not run: no isolated MySQL/MinIO runtime, no test environment credentials, and inherited tests require demo accounts/data. No seeds, migrations or real-data operations performed.
 - Production TLS, proxy topology, remote storage URLs, bucket policy, secret rotation and branch protection need deployment-side verification. Authentication throttling, onboarding delivery, tenant/object authorization and dependency upgrades remain open.
 - Local Git push failed connecting to github.com:443. Commits remain local on bigchange-stabilization; no remote branch or main updates were made. A Git bundle and verification report preserve the changes for transfer.
+
+## 2026-09-30 - Dependency remediation follow-up
+- `packages/web/package.json`: Next 14.2.15 -> 14.2.35, staying on the existing major to reduce migration scope. This does NOT resolve all current Next advisories.
+- `packages/api/package.json`: bcrypt 5 -> 6.0.0, removing the old node-pre-gyp/tar chain. Cost-12 hash/compare and wrong-password rejection passed locally; no stored passwords changed.
+- `package-lock.json`: regenerated for these versions and compatible Handlebars 4.7.9. No force-audit fixes or vulnerability suppressions.
+- Fresh audit: 44 findings (6 low, 21 moderate, 16 high, 1 critical), down from 48/3 critical. Remaining critical package: Next. A supported-major Next migration with UI/runtime regression checks is still required.
+- Prisma client generation now succeeds with network access; API typecheck and API build pass. The earlier missing-client errors are resolved.
+- Policy tests: 14/14 passed after dependency updates. Full web build is recorded in the follow-up verification entry.
