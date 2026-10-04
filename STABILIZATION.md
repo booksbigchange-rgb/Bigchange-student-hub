@@ -137,3 +137,12 @@ Phase 0 is complete only when the critical authorization, homework identity, tea
 - `promotions/page.tsx`: declare the existing studentId/fromClassId response fields used by fallback labels.
 - `lms/page.tsx`: type the dashboard stats response and handle HTTP failure through the existing catch path.
 - Web `tsc --noEmit --incremental false`: passed after dependency installation completed. No redesign, mock data or unrelated features introduced.
+
+## 2026-10-04 - Publication and build-output verification
+- Published the six preceding commits to `bigchange-stabilization` through the connected GitHub app. Remote head at verification: `c74e56de3c7d6bb776d5cc9498b64da5c9af4777`. Local files match the remote tree; original local commit IDs are preserved on `local-stabilization-backup-20261004`.
+- Verified main remains `e3c4c37aa50e4247eee87562e727db516fda4b6b`; no merge or main changes.
+- CI run https://github.com/booksbigchange-rgb/Bigchange-student-hub/actions/runs/37175483744: secret scan and HTTP policy tests passed. Dependency audit failed as expected; no bypass added.
+- Root build finished with 3 successful tasks and generated the web standalone server. Inspection caught missing API output despite the nominal successful build: Nest deletes dist while incremental metadata can suppress re-emission.
+- `packages/api/tsconfig.build.json`: disable incremental compilation for release builds. Explicit API build now emits `dist/main.js`; web standalone server exists at `.next/standalone/packages/web/server.js`.
+- Lint remains blocked by missing ESLint; runtime/database E2E, Docker ports, deployment TLS/proxy, onboarding/throttling and authorization coverage remain open. Prior audit counts are from September 30, not a new October 4 local audit. CI independently confirms the dependency gate is still failing.
+- Phase 0 remains incomplete. No demo data loaded, no rebranding, no production deployment.
